@@ -12,4 +12,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "Cray")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 endif()
 
+target_link_libraries(IntervalCheck ${CMAKE_DL_LIBS})
+
 install(TARGETS IntervalCheck DESTINATION lib)
