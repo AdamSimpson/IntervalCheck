@@ -138,14 +138,17 @@ void process_environment_variables() {
   char *names_env = strdup(getenv("IC_CALLBACKS"));
 
   while ((callback_name = strsep(&names_env, ":"))) {
+    // Check if we've reached the maximum number of callbacks
+    if(callback_count == MAX_CALLBACKS) {
+      EXIT_PRINT("Callback count exceeded: %d\n", MAX_CALLBACKS);
+    }
+
     // Get function pointer to callback_name and append it to our list of callbacks
     callbacks[callback_count] = (ic_callback_t)dlsym(dl_handle, callback_name);
 
+    // Check to make sure we have a valid function pointer
     if(callbacks[callback_count]) {
       callback_count++;
-      if(callback_count == MAX_CALLBACKS) {
-        EXIT_PRINT("Callback count exceeded: %d\n", MAX_CALLBACKS);
-      }
     } else {
       EXIT_PRINT("Callback Function not found: %s\n", callback_name);
     }
