@@ -26,9 +26,10 @@ static bool ic_per_node = false;
 
 static int lock_fd = -1;
 
-const static int MAX_CALLBACKS = 1024;
 typedef void (*ic_callback_t)(void);
-ic_callback_t callbacks[MAX_CALLBACKS];
+
+#define MAX_CALLBACKS 1024
+static ic_callback_t callbacks[MAX_CALLBACKS];
 static int callback_count = 0;
 
 // Handler called by alarm at specified interval
