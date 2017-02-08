@@ -136,7 +136,13 @@ void process_environment_variables() {
 
   callback_count = 0;
   char *callback_name;
-  char *names_env = strdup(getenv("IC_CALLBACKS"));
+  
+  char *names_env;
+  if(getenv("IC_CALLBACKS")) {
+    names_env = strdup(getenv("IC_CALLBACKS"));
+  } else {
+    EXIT_PRINT("IC_CALLBACKS not defined\n");
+  }
 
   while ((callback_name = strsep(&names_env, ":"))) {
     // Check if we've reached the maximum number of callbacks
