@@ -1,5 +1,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 #include <unistd.h>
@@ -17,7 +18,7 @@
 	                              exit(EXIT_FAILURE); } while(0)
 
 #define DEBUG_PRINT(str, args...) do {                                              \
-if(cg_debug == 1) {                                                                 \
+if(ic_debug == 1) {                                                                 \
   printf("CG DEBUG: %s: %d: %s\n" str, __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
@@ -45,14 +46,19 @@ void setup_timer() {
 
   // Create only one timer per node if specified
   if(ic_per_node) {
-    /* TODO: Don't hardcode /tmp */
+    // Determine absolute lock file path
+    char lock_file_name[1024];
+    char tmp_dir[756] = "/tmp";
+    if(getenv("TMPDIR")){
+      strncpy(tmp_dir, getenv("TMPDIR"), 756);
+    }
+    sprintf(lock_file_name, "%s/interval_check.lock", tmp_dir);
 
     // Create lock file if one doesn't exist
-    lock_fd = open("/tmp/interval_check.lock", O_CREAT); 
-    if(lock_fd == -1) {
-      EXIT_PRINT("Failed to create lock file: %s\n", strerror(errno));
-    }    
-    
+    lock_fd = open(lock_file_name, O_CREAT|O_RDWR, S_IRUSR | S_IWUSR); 
+    // We don't check for a failure to create the file
+    // As a maximum of one process per node will be able to create it
+
     // Attempt to aquire lock on file
     struct flock lock_struct;
     memset(&lock_struct, 0, sizeof(lock_struct));
@@ -89,7 +95,12 @@ void setup_timer() {
     }
 
     // Check if a ITIMER_REAL already is set
-    if( getitimer(ITIMER_REAL, &timer) ) {
+    getitimer(ITIMER_REAL, &timer);
+    if(timer.it_interval.tv_sec  != 0 ||
+       timer.it_interval.tv_usec != 0 ||
+       timer.it_value.tv_sec     != 0 ||
+       timer.it_value.tv_usec    != 0) {
+      DEBUG_PRINT("WARNING: ITIMER_REAL already set, overwriting\n");
     }
 
     // Set the timer interval
@@ -154,7 +165,7 @@ void process_environment_variables() {
     callbacks[callback_count] = (ic_callback_t)dlsym(dl_handle, callback_name);
 
     // Check to make sure we have a valid function pointer
-    if(callbacks[callback_count]) {
+    if(callbacks[callback_count] != NULL) {
       callback_count++;
     } else {
       EXIT_PRINT("Callback Function not found: %s\n", callback_name);
@@ -162,12 +173,13 @@ void process_environment_variables() {
   }
 }
 
-//void destroy_timer() {
+void destroy_timer() {
+  printf("impliment destroy_timer\n");
   // Free timer
   // Free callback strings
   // Delete lockfile
   // dlclose dl_handle
-//}
+}
 
 // Entry point into the application
 // This will be run as soon as the library is loaded
@@ -181,5 +193,5 @@ void IC_init() {
 // Called when the library is unloaded
 __attribute__((destructor))
 void IC_finalize() {
-//  destroy_timer();
+  destroy_timer();
 }
