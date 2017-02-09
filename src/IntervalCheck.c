@@ -186,7 +186,7 @@ void destroy_timer() {
   setitimer(ITIMER_REAL, &timer, NULL);
 
   // Return the alarm handler to default
-  sigaction(SIGALRM, SIG_DFL);
+  signal(SIGALRM, SIG_DFL);
 
   // Close and delete lock file
   close(lock_fd);
