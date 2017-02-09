@@ -25,6 +25,8 @@ if(ic_debug == 1) {                                                             
 static bool ic_debug = false;
 static bool ic_per_node = false;
 
+static void *dl_handle = NULL;
+static char *lock_file_name;
 static int lock_fd = -1;
 
 typedef void (*ic_callback_t)(void);
@@ -47,7 +49,7 @@ void setup_timer() {
   // Create only one timer per node if specified
   if(ic_per_node) {
     // Determine absolute lock file path
-    char lock_file_name[1024];
+    lock_file_name = (char*)malloc(sizeof(char)*1024);
     char tmp_dir[756] = "/tmp";
     if(getenv("TMPDIR")){
       strncpy(tmp_dir, getenv("TMPDIR"), 756);
@@ -140,7 +142,7 @@ void process_environment_variables() {
   }
 
   // All callbacks must be loaded and visible to the process
-  void* dl_handle = dlopen(0,RTLD_NOW|RTLD_GLOBAL);
+  dl_handle = dlopen(0,RTLD_NOW|RTLD_GLOBAL);
   if(!dl_handle) {
     EXIT_PRINT("Error: %s\n", dlerror());
   }
@@ -171,14 +173,28 @@ void process_environment_variables() {
       EXIT_PRINT("Callback Function not found: %s\n", callback_name);
     }
   }
+  free(names_env);
 }
 
 void destroy_timer() {
-  printf("impliment destroy_timer\n");
-  // Free timer
-  // Free callback strings
-  // Delete lockfile
+  // Stop the timer
+  struct itimerval timer;
+  timer.it_interval.tv_sec = 0;
+  timer.it_interval.tv_usec = 0;
+  timer.it_value.tv_sec = 0;
+  timer.it_value.tv_usec = 0;
+  setitimer(ITIMER_REAL, &timer, NULL);
+
+  // Return the alarm handler to default
+  sigaction(SIGALRM, SIG_DFL);
+
+  // Close and delete lock file
+  close(lock_fd);
+  remove(lock_file_name); 
+  free(lock_file_name);
+
   // dlclose dl_handle
+  dlclose(dl_handle);
 }
 
 // Entry point into the application
