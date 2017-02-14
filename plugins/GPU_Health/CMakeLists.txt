@@ -11,6 +11,7 @@ link_directories("/usr/lib/nvidia")
 # Shared GPUhealth library
 add_library(GPUhealth SHARED src/GPU_Health.c)
 set_target_properties(GPUhealth PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+set_property(TARGET GPUhealth PROPERTY C_STANDARD 99)
 
 target_link_libraries(GPUhealth libnvidia-ml.so)
 target_link_libraries(GPUhealth ${CUDA_LIBRARIES})

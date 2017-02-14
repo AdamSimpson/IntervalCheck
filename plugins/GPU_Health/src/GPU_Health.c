@@ -42,7 +42,7 @@ void kill_job() {
   char kill_command[1024];
 
   // Kill LSF job, this kills the entire job and not just the job step
-  // e.g. GH_BATCH_KILL=appkill , GH_BATCH_ID_VAR=APPID
+  // e.g. GH_BATCH_KILL=bkill , GH_BATCH_ID_VAR=LSB_JOBID
   sprintf(kill_command, "%s %s", getenv("GH_BATCH_KILL"), getenv(getenv("GH_BATCH_ID_VAR")));
   DEBUG_PRINT("Sending batch kill command %s\n", kill_command);
 
