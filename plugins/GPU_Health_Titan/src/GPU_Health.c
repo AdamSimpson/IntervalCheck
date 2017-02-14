@@ -154,8 +154,6 @@ void arm_watchdog() {
   if(err != 0) {
     EXIT_PRINT("Failed to arm watchdog timer: %s\n", strerror(errno));
   }
-
-  sleep(60);
 }
 
 // Disarm the watchdog timer

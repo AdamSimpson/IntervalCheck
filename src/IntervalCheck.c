@@ -19,7 +19,7 @@
 
 #define DEBUG_PRINT(str, args...) do {                                              \
 if(ic_debug == 1) {                                                                 \
-  printf("CG DEBUG: %s: %d: %s: " str, __FILENAME__, __LINE__, __func__, ##args); } \
+  printf("IC DEBUG: %s: %d: %s: " str, __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
 static bool ic_debug = false;
