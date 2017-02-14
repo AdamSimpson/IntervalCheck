@@ -25,7 +25,7 @@ if(gh_debug == 1) {                                                             
   struct tm *tm = localtime(&t);                                                    \
   char *time = asctime(tm);                                                         \
   time[strlen(time) - 1] = 0;                                                       \
-  printf("GH DEBUG(%s): %s: %d: %s " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
+  printf("GH DEBUG(%s): %s: %d: %s: " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
 static bool initialized = false;
