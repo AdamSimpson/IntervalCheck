@@ -62,6 +62,6 @@ class GpuCheckFormula < Formula
 
     setenv GH_PRELOAD $PREFIX/lib/libGPUhealthTitan.so 
 
-    set-alias aprun {aprun -e LD_PRELOAD=$IC_PRELOAD:$GH_PRELOAD}
+    set-alias aprun {`which aprun` -e LD_PRELOAD=$IC_PRELOAD:$GH_PRELOAD $@}
   MODULEFILE
 end
