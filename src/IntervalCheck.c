@@ -37,6 +37,8 @@ static int callback_count = 0;
 
 // Handler called by alarm at specified interval
 void alarm_handler(int sig) {
+  DEBUG_PRINT("Handling callbacks\n");
+
   // Call all requested callbacks
   for(int i=0; i<callback_count; i++) {
     (*callbacks[i])();
@@ -106,8 +108,8 @@ void setup_timer() {
     }
 
     // Set the timer interval
-    if(getenv("CG_INTERVAL")) {
-      timer.it_interval.tv_sec = atoi(getenv("CG_INTERVAL"));
+    if(getenv("IC_INTERVAL")) {
+      timer.it_interval.tv_sec = atoi(getenv("IC_INTERVAL"));
     }
     else { // Default to 5 minutes
       timer.it_interval.tv_sec = 60*5;
@@ -126,7 +128,7 @@ void setup_timer() {
 }
 
 void process_environment_variables() {
-  // Unset LD_PRELOAD as it can upset Cray's
+  // Check if LD_PRELOAD should be unset, this can be helpful on Cray's
   if (getenv("IC_UNSET_PRELOAD")) {
     unsetenv("LD_PRELOAD");
   }
