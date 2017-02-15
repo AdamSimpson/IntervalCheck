@@ -1,5 +1,5 @@
 # IntervalCheck
-`IntervalCheck` is a utility that calls runtime specified functions at a specified interval
+`IntervalCheck` is a utility that calls runtime specified user created functions at a specified interval
 
 ## Install
 `IntervalCheck` includes a Smithy formula to automate deployment, for centers not
