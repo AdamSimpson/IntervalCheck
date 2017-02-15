@@ -52,5 +52,9 @@ class IntervalCheckFormula < Formula
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/plugins/lib
     setenv IC_PRELOAD $PREFIX/lib/libIntervalCheck.so
+
+
+    prepend-path PATH $PREFIX/bin
+    set-alias aprun aprun-interval
   MODULEFILE
 end
