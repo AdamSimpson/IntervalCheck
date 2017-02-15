@@ -31,7 +31,7 @@ class GpuCheckFormula < Formula
 
         system "rm -rf build; mkdir build"
 	Dir.chdir "build"
-        system "cmake -DCMAKE_INSTALL_PREFIX=#{prefix} .."
+        system "cmake -DCUDA_TOOLKIT_ROOT_DIR=$CUDATOOLKIT_HOME -DCMAKE_INSTALL_PREFIX=#{prefix} .."
         system "make"
         system "make install"
       end
