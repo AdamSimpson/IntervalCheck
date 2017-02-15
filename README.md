@@ -65,6 +65,7 @@ int main() {
 
 ```
 $ gcc a.c
+```
 
 ```
 $ ./a.out
