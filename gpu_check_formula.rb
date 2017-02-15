@@ -47,12 +47,6 @@ class GpuCheckFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    # setting multiple aprun aliases under TCSH is broken so we start fresh
-    if { ! [ is-loaded gpu_check ] } {
-      puts stderr "reloading gpu_check"
-      module unload gpu_check
-    }
-
     module unload xalt
     module load interval_check
     module load cudatoolkit
@@ -61,12 +55,12 @@ class GpuCheckFormula < Formula
     setenv GH_GPU_COUNT 1
     setenv IC_CALLBACKS gpu_health
 
-    set PREFIX /sw/xk6/gpu_check/dev/sles11.3_gnu4.9.3
+    set PREFIX <%= @package.prefix %>
 
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/plugins/lib
 
-    prepend_path IC_PRELOAD $PREFIX/lib/libGPUhealthTitan.so
+    prepend-path IC_PRELOAD $PREFIX/lib/libGPUhealthTitan.so
 
   MODULEFILE
 end
