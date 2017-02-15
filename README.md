@@ -20,7 +20,7 @@ The artificact `libIntervalCheck.so` will be created under `{PREFIX}/lib`
 To specify a function a dynamic library containing the function with signature `void (void)` must be created, `LD_PRELOAD` must preload this library, and the function name must be specified. An example is given below:
 
 
-### Step 1: Create a function
+**Step 1:** Create a function
 
 ```
 $ cat foo.c
@@ -36,32 +36,37 @@ void bar2() {
 }
 ```
 
-### Step 2: Compile the function into a dynamic library, `libfoo.so`
+**Step 2:** Compile the function into a dynamic library, `libfoo.so`
 
 ```
 $ gcc -shared -fpic foo.c -o libfoo.so
 ```
 
-### Step 3: `LD_PRELOAD` the interval check library as well as our custom library
+**Step 3:** `LD_PRELOAD` the interval check library as well as our custom library
 
 ```
 $ export LD_PRELOAD=libIntervalCheck.so:libfoo.so
 ```
 
-### Step 4: Tell `IntervalCheck` to call `bar()`, which is contained in the `LD_PRELOAD` library `libfoo.so`
+**Step 4:** Tell `IntervalCheck` to call `bar()`, which is contained in the `LD_PRELOAD` library `libfoo.so`
+```
 $ export IC_FUNCTIONS="bar:bar2"
 ```
 
-### Step 4: Run your dynamically linked application as normal!
+**Step 4:** Run your dynamically linked application as normal!
+
 ```
 $ cat a.c
 int main() {
   do{} while(1);
   return 0;
 }
+```
 
+```
 $ gcc a.c
 
+```
 $ ./a.out
 Hi from bar()
 Hi from bar2()
