@@ -17,40 +17,40 @@ The artificact `libIntervalCheck.so` will be created under `{PREFIX}/lib`
 ## Run
 `IntervalCheck` works best with dynamically linked applications, in this case all that is needed to enable the timer is to set `LD_PRELOAD` to the path of `libIntervalCheck.so`.
 
-To specify a function a dynamic library containing the function with signature `void (void)` must be created, `LD_PRELOAD` must preload this library, and the function name must be specified. An example is given below:
+To specify a function for `IntervalCheck` to call a dynamic library containing the function, with signature `void (void)`, must be created. `LD_PRELOAD` must preload this library, and the function name must be provided to `IntervalCheck`. An example of how to achieve this is given below:
 
 
 **Step 1:** Create a function
 
 ```
-$ cat foo.c
+$ cat code.c
 
 #include "stdio.h"
+
+void foo() {
+  printf("Hi from foo()\n");
+}
 
 void bar() {
   printf("Hi from bar()\n");
 }
-
-void bar2() {
-  printf("Hi from bar2()\n");
-}
 ```
 
-**Step 2:** Compile the function into a dynamic library, `libfoo.so`
+**Step 2:** Compile the function into a dynamic library, `libcode.so`
 
 ```
-$ gcc -shared -fpic foo.c -o libfoo.so
+$ gcc -shared -fpic code.c -o libcode.so
 ```
 
-**Step 3:** `LD_PRELOAD` the interval check library as well as our custom library
+**Step 3:** `LD_PRELOAD` the interval check library as well as our custom library, provide the path as needed
 
 ```
-$ export LD_PRELOAD=libIntervalCheck.so:libfoo.so
+$ export LD_PRELOAD=./libIntervalCheck.so:./libcode.so
 ```
 
-**Step 4:** Tell `IntervalCheck` to call `bar()`, which is contained in the `LD_PRELOAD` library `libfoo.so`
+**Step 4:** Tell `IntervalCheck` to call `foo()` and `bar()`, which is contained in the `LD_PRELOAD` library `libcode.so`
 ```
-$ export IC_FUNCTIONS="bar:bar2"
+$ export IC_FUNCTIONS="foo:bar"
 ```
 
 **Step 4:** Run your dynamically linked application as normal!
@@ -69,10 +69,10 @@ $ gcc a.c
 
 ```
 $ ./a.out
+Hi from foo()
 Hi from bar()
-Hi from bar2()
+Hi from foo()
 Hi from bar()
-Hi from bar2()
 ...
 
 ```
