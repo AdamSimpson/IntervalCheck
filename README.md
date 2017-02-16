@@ -71,6 +71,9 @@ $ gcc a.c
 $ ./a.out
 Hi from foo()
 Hi from bar()
+
+... 300 seconds ...
+
 Hi from foo()
 Hi from bar()
 ...
@@ -82,7 +85,7 @@ The following environment variables can be used to fine time `IntervalTimer`
 
 `TMPDIR`           : Set the path to create temporary lock files in(default /tmp)
 
-`IC_INTERVAL`      : The interval in seconds between running the specified functions(default 600)
+`IC_INTERVAL`      : The interval in seconds between running the specified functions(default 300)
 
 `IC_UNSET_PRELOAD` : Unset the `LD_PRELOAD` variable on `IntervalCheck` initialization if set(default unset)
 
