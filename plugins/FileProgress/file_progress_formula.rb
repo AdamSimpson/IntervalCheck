@@ -12,7 +12,6 @@ class GpuCheckFormula < Formula
         commands << "load PrgEnv-gnu" if build_name =~ /gnu/
         commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
 
-        commands << "load cudatoolkit"
         commands << "load dynamic-link"
         commands << "load cmake3"
         commands << "load git"
@@ -27,11 +26,11 @@ class GpuCheckFormula < Formula
         system "rm -rf source"
         system "git clone https://github.com/AdamSimpson/IntervalCheck.git source"
 
-	Dir.chdir "#{prefix}/source/plugins/GPU_Health_Titan"
+	Dir.chdir "#{prefix}/source/plugins/File_Progress"
 
         system "rm -rf build; mkdir build"
 	Dir.chdir "build"
-        system "cmake -DCUDA_TOOLKIT_ROOT_DIR=$CUDATOOLKIT_HOME -DCMAKE_INSTALL_PREFIX=#{prefix} .."
+        system "cmake -DCMAKE_INSTALL_PREFIX=#{prefix} .."
         system "make"
         system "make install"
       end
@@ -52,15 +51,14 @@ class GpuCheckFormula < Formula
     module load cudatoolkit
 
     setenv IC_PER_NODE true
-    setenv GH_GPU_COUNT 1
-    prepend-path IC_CALLBACKS gpu_health
+    prepend-path IC_CALLBACKS file_progress
 
     set PREFIX <%= @package.prefix %>
 
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/plugins/lib
 
-    prepend-path IC_PRELOAD $PREFIX/lib/libGPUhealthTitan.so
+    prepend-path IC_PRELOAD $PREFIX/lib/libFileProgress.so
 
   MODULEFILE
 end
