@@ -29,7 +29,7 @@ if(fp_debug == 1) {                                                             
   printf("GH DEBUG(%s): %s: %d: %s: " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
-#define FP_MAX_PATH_LENGTH 1024
+#define FP_MAX_PATH_LENGTH 2048
 
 static bool fp_initialized = false;
 static bool fp_debug = false;
@@ -104,7 +104,8 @@ void check_environment_variables() {
 
   // File to check
   if(getenv("FP_FILE")) {
-    strcpy_s(fp_file, FP_MAX_PATH_LENGTH, getenv("FP_FILE"));
+    strcpy(fp_file, getenv("FP_FILE"));
+//    strcpy_s(fp_file, FP_MAX_PATH_LENGTH, getenv("FP_FILE"));
   }
 
   // Minimum filesize in bytes
