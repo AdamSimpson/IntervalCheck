@@ -47,8 +47,11 @@ class GpuCheckFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     module unload xalt
-    module load interval_check
     module load cudatoolkit
+
+    if { ![is-loaded interval_check] } {
+      module load interval_check
+    }
 
     setenv IC_PER_NODE true
     prepend-path IC_CALLBACKS file_progress
