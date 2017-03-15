@@ -33,7 +33,7 @@ if(fp_debug == 1) {                                                             
 
 static bool fp_initialized = false;
 static bool fp_debug = false;
-static unsigned long fp_initial_skips = 0;
+static unsigned long fp_initial_skips = 1;
 static unsigned long fp_interval_stride = 1;
 static char fp_file[FP_MAX_PATH_LENGTH];
 static unsigned long fp_min_bytes = 0;

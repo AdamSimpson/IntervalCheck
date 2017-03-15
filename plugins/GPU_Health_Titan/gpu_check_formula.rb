@@ -56,7 +56,7 @@ class GpuCheckFormula < Formula
 
     setenv IC_PER_NODE true
     setenv GH_GPU_COUNT 1
-    prepend-path IC_CALLBACKS gpu_health
+    prepend-path IC_CALLBACKS file_progress
 
     set PREFIX <%= @package.prefix %>
 

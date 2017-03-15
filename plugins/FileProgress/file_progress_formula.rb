@@ -1,4 +1,4 @@
-class GpuCheckFormula < Formula
+class FileProgressFormula < Formula
   homepage "https://github.com/AdamSimpson/IntervalCheck.git"
   url "none"
 
