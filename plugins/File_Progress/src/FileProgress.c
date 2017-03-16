@@ -13,11 +13,11 @@
 #include <fcntl.h>
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define EXIT_PRINT(str, args...) do { fprintf(stderr, "ERROR Check GPU: %s:%d:%s(): " str, \
+#define EXIT_PRINT(str, args...) do { fprintf(stderr, "ERROR Check File: %s:%d:%s(): " str, \
 		                               __FILE__, __LINE__, __func__, ##args); \
 	                              exit(EXIT_FAILURE); } while(0)
 
-#define SIGKILL_PRINT(str, args...) do { fprintf(stderr, "ERROR Check GPU: %s:%d:%s(): " str, \
+#define SIGKILL_PRINT(str, args...) do { fprintf(stderr, "ERROR Check File: %s:%d:%s(): " str, \
                                                __FILE__, __LINE__, __func__, ##args); \
                                       raise(SIGKILL); } while(0)
 #define DEBUG_PRINT(str, args...) do {                                              \
@@ -26,7 +26,7 @@ if(fp_debug == 1) {                                                             
   struct tm *tm = localtime(&t);                                                    \
   char *time = asctime(tm);                                                         \
   time[strlen(time) - 1] = 0;                                                       \
-  printf("GH DEBUG(%s): %s: %d: %s: " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
+  printf("FP DEBUG(%s): %s: %d: %s: " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
 #define FP_MAX_PATH_LENGTH 2048
@@ -41,14 +41,17 @@ static unsigned long fp_min_lines = 0;
 static unsigned long fp_min_lines_progress = 0;
 static unsigned long fp_min_bytes_progress = 0;
 static unsigned long fp_one_shot = 0;
-static bool fp_single_process = true;
+static bool fp_single_process = false;
 static bool fp_master_process = false;
 static int lock_fd = -1;
 
 // Return the number of bytes in file_name
 long long file_bytes(const char* file_name) {
   struct stat st;
-  stat(file_name, &st);
+  int err = stat(file_name, &st);
+  if(err != 0) {
+    SIGKILL_PRINT("Error stating %s: %s\n", file_name, strerror(errno));
+  }
   return (long long)st.st_size;  
 }
 
@@ -56,6 +59,9 @@ long long file_bytes(const char* file_name) {
 long long file_lines(const char* file_name) {
   // Open File and count number of new lines
   FILE *file = fopen(file_name, "r");
+  if(file == NULL) {
+    SIGKILL_PRINT("Error opening %s: %s\n", file_name, strerror(errno));
+  }
   int c;
   long long new_lines = 0;
   do {
@@ -105,7 +111,9 @@ void check_environment_variables() {
   // File to check
   if(getenv("FP_FILE")) {
     strcpy(fp_file, getenv("FP_FILE"));
-//    strcpy_s(fp_file, FP_MAX_PATH_LENGTH, getenv("FP_FILE"));
+  } else {
+    // Default to the temporary file created by PBS
+    sprintf(fp_file, "%s.OU", getenv("PBS_JOBID"));
   }
 
   // Minimum filesize in bytes
@@ -136,10 +144,7 @@ void check_environment_variables() {
   // Only preform the check from a single process
   if(getenv("FP_SINGLE_PROCESS")) {
     fp_single_process = true;
-  } else {
-    fp_single_process = false;
-  }
-
+  } 
 }
 
 void initialize() {
@@ -198,23 +203,30 @@ void file_progress() {
     if(fp_min_bytes > 0) {
       long long bytes = file_bytes(fp_file);
       if(bytes < fp_min_bytes) {
+        EXIT_PRINT("%s contains %lld bytes which is less than the required %lu", fp_file, bytes, fp_min_bytes);
         kill_job();
       }
+      DEBUG_PRINT("%s contains %lld bytes\n", fp_file, bytes);
     }
 
     if(fp_min_lines > 0) {
       long long lines = file_lines(fp_file);
       if(lines < fp_min_lines) {
+        EXIT_PRINT("%s contains %lld bytes which is less than the required %lu", fp_file, lines, fp_min_lines);
         kill_job();
       }
+      DEBUG_PRINT("%s contains %lld lines\n", fp_file, lines);
     }
 
     if(fp_min_lines_progress > 0) {
       static int previous_lines = 0;
       long long lines = file_lines(fp_file);
       if(lines - previous_lines < fp_min_lines_progress) {
+        EXIT_PRINT("%s only added %lld lines but needed to add %lld \n", fp_file, lines - previous_lines, fp_min_lines_progress);
         kill_job();
       }
+      DEBUG_PRINT("%s contained %lld lines and now contains %lld\n", fp_file, lines, previous_lines);
+
       previous_lines = lines;
     }
 
@@ -222,8 +234,11 @@ void file_progress() {
       static int previous_bytes = 0;
       long long bytes = file_bytes(fp_file);
       if(bytes - previous_bytes < fp_min_bytes_progress) {
+        EXIT_PRINT("%s only added %lld bytes but needed to add %lld \n", fp_file, bytes - previous_bytes, fp_min_bytes_progress);
         kill_job();
       }
+      DEBUG_PRINT("%s contained %lld bytes and now contains %lld\n", fp_file, bytes, previous_bytes);
+
       previous_bytes = bytes;
     }
 
