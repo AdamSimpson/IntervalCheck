@@ -13,11 +13,11 @@
 #include <fcntl.h>
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define EXIT_PRINT(str, args...) do { fprintf(stderr, "ERROR Check File: %s:%d:%s(): " str, \
+#define EXIT_PRINT(str, args...) do { fprintf(stderr, "ERROR File Progress: %s:%d:%s(): " str, \
 		                               __FILE__, __LINE__, __func__, ##args); \
 	                              exit(EXIT_FAILURE); } while(0)
 
-#define SIGKILL_PRINT(str, args...) do { fprintf(stderr, "ERROR Check File: %s:%d:%s(): " str, \
+#define SIGKILL_PRINT(str, args...) do { fprintf(stderr, "ERROR File Progress: %s:%d:%s(): " str, \
                                                __FILE__, __LINE__, __func__, ##args); \
                                       raise(SIGKILL); } while(0)
 #define DEBUG_PRINT(str, args...) do {                                              \
@@ -152,7 +152,7 @@ void initialize() {
 
   if(fp_single_process) {
     // Create lock file if one doesn't exist, the pwd is expected to be shared amongst the processes
-    lock_fd = open("file_progress.lock", O_CREAT|O_RDWR, S_IRUSR | S_IWUSR);
+    lock_fd = open(".file_progress.lock", O_CREAT|O_RDWR, S_IRUSR | S_IWUSR);
     // We don't check for a failure to create the file
     // As a maximum of one process will be able to create it
 
@@ -166,8 +166,11 @@ void initialize() {
 
     int locked = fcntl(lock_fd, F_SETLK, &lock_struct);
     
-    if(locked == -1) {
+    // If we aquired the lock we're the master process
+    if(locked != -1) {
       fp_master_process = true;
+    } else {
+      fp_master_process = false;
     }
   }
 
