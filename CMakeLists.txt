@@ -15,6 +15,6 @@ endif()
 target_link_libraries(IntervalCheck ${CMAKE_DL_LIBS})
 
 install(TARGETS IntervalCheck DESTINATION lib)
-install(FILES aprun-interval
+install(FILES aprun
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ 
         WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")

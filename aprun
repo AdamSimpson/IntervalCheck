@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# I give up on environment module aliases...they are broken for TCSH and don't work non-interactively in Bash
+
+`which aprun` -e LD_PRELOAD=${IC_PRELOAD}:${LD_PRELOAD} $@
