@@ -58,7 +58,7 @@ class FileCheckFormula < Formula
 
     set PREFIX <%= @package.prefix %>
 
-    setenv FP_SINGLE_PROCESS 1
+    setenv FP_SINGLE_PROCESS true
 
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/plugins/lib
