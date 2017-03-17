@@ -171,6 +171,7 @@ void process_environment_variables() {
     // Check to make sure we have a valid function pointer
     if(callbacks[callback_count] != NULL) {
       callback_count++;
+      DEBUG_PRINT("Added function %s\n", callback_name);
     } else {
       EXIT_PRINT("Callback Function not found: %s\n", callback_name);
     }
