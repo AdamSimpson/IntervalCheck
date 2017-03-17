@@ -55,6 +55,5 @@ class IntervalCheckFormula < Formula
 
 
     prepend-path PATH $PREFIX/bin
-    set-alias aprun aprun-interval
   MODULEFILE
 end
