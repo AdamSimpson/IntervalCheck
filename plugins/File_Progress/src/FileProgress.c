@@ -212,7 +212,7 @@ void file_progress() {
     if(fp_min_lines > 0) {
       long long lines = file_lines(fp_file);
       if(lines < fp_min_lines) {
-        EXIT_PRINT("%s contains %lld bytes which is less than the required %lu", fp_file, lines, fp_min_lines);
+        EXIT_PRINT("%s contains %lld lines which is less than the required %lu", fp_file, lines, fp_min_lines);
         kill_job();
       }
       DEBUG_PRINT("%s contains %lld lines\n", fp_file, lines);
@@ -221,7 +221,8 @@ void file_progress() {
     if(fp_min_lines_progress > 0) {
       static int previous_lines = 0;
       long long lines = file_lines(fp_file);
-      if(lines - previous_lines < fp_min_lines_progress) {
+      long long line_progress = lines - previous_lines;
+      if(line_progress < fp_min_lines_progress) {
         EXIT_PRINT("%s only added %lld lines but needed to add %lld \n", fp_file, lines - previous_lines, fp_min_lines_progress);
         kill_job();
       }
@@ -233,7 +234,8 @@ void file_progress() {
     if(fp_min_bytes_progress > 0) {
       static int previous_bytes = 0;
       long long bytes = file_bytes(fp_file);
-      if(bytes - previous_bytes < fp_min_bytes_progress) {
+      long long bytes_progress = bytes - previous_bytes;
+      if(bytes_progress < fp_min_bytes_progress) {
         EXIT_PRINT("%s only added %lld bytes but needed to add %lld \n", fp_file, bytes - previous_bytes, fp_min_bytes_progress);
         kill_job();
       }
