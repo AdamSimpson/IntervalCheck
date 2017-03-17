@@ -187,7 +187,7 @@ void file_progress() {
 
   // Determine if we should check the file
   bool should_check = false;
-  if(fp_single_process && fp_single_process) { // We  won the lock file race
+  if(!fp_single_process || fp_master_process) { // All processes are participating or we won the lock file race
     if(interval_count >= fp_initial_skips) { // Skip initial intervals
       if((interval_count - fp_initial_skips) % fp_interval_stride == 0) { // Stride the file check against the interval
         if(!(fp_one_shot && fired)) { // If we're in oneshot mode only fire once
