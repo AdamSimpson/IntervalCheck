@@ -2,4 +2,7 @@
 
 # I give up on environment module aliases...they are broken for TCSH and don't work non-interactively in Bash
 
-`which aprun` -e LD_PRELOAD=${IC_PRELOAD}:${LD_PRELOAD} $@
+# Get the "real" aprun, or atleast the next in line
+next_aprun=`which -a aprun | head -n 2 | tail -1`
+
+$next_aprun -e LD_PRELOAD=${IC_PRELOAD}:${LD_PRELOAD} $@
