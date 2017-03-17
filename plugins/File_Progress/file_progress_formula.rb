@@ -58,6 +58,8 @@ class FileProgressFormula < Formula
 
     set PREFIX <%= @package.prefix %>
 
+    setenv FP_SINGLE_PROCESS 1
+
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/plugins/lib
 
