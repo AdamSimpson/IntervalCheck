@@ -46,7 +46,7 @@ static bool fp_master_process = false;
 static int lock_fd = -1;
 
 // Return the number of bytes in file_name
-long long file_bytes(const char* file_name) {
+static long long file_bytes(const char* file_name) {
   struct stat st;
   int err = stat(file_name, &st);
   if(err != 0) {
@@ -56,7 +56,7 @@ long long file_bytes(const char* file_name) {
 }
 
 // Return the number of lines file_name
-long long file_lines(const char* file_name) {
+static long long file_lines(const char* file_name) {
   // Open File and count number of new lines
   FILE *file = fopen(file_name, "r");
   if(file == NULL) {
@@ -77,7 +77,7 @@ long long file_lines(const char* file_name) {
 
 // Kill the batch job
 // This is required as the hangs can make the process non responsive to SIGKILL
-void kill_job() {
+static void kill_job() {
   // Get App ID
   int alps_id = atoi(getenv("ALPS_APP_ID"));
 
@@ -93,7 +93,7 @@ void kill_job() {
 }
 
 // Check for any useful environment variables
-void check_environment_variables() {
+static void check_environment_variables() {
   if(getenv("FP_DEBUG")) {
     fp_debug = true;
   }
@@ -147,7 +147,7 @@ void check_environment_variables() {
   } 
 }
 
-void initialize() {
+static void initialize() {
   check_environment_variables();
 
   if(fp_single_process) {

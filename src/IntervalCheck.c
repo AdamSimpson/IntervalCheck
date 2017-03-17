@@ -36,7 +36,7 @@ static ic_callback_t callbacks[MAX_CALLBACKS];
 static int callback_count = 0;
 
 // Handler called by alarm at specified interval
-void alarm_handler(int sig) {
+static void alarm_handler(int sig) {
   DEBUG_PRINT("Handling callbacks\n");
 
   // Call all requested callbacks
@@ -45,7 +45,7 @@ void alarm_handler(int sig) {
   }
 }
 
-void setup_timer() {
+static void setup_timer() {
   bool create_timer = true;
 
   // Create only one timer per node if specified
@@ -127,7 +127,7 @@ void setup_timer() {
   }
 }
 
-void process_environment_variables() {
+static void process_environment_variables() {
   // Check if LD_PRELOAD should be unset, this can be helpful on Cray's
   if (getenv("IC_UNSET_PRELOAD")) {
     unsetenv("LD_PRELOAD");
@@ -179,7 +179,7 @@ void process_environment_variables() {
   free(names_env);
 }
 
-void destroy_timer() {
+static void destroy_timer() {
   // Stop the timer
   struct itimerval timer;
   timer.it_interval.tv_sec = 0;
