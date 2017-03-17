@@ -1,4 +1,4 @@
-class FileProgressFormula < Formula
+class FileCheckFormula < Formula
   homepage "https://github.com/AdamSimpson/IntervalCheck.git"
   url "none"
 
