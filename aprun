@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh --noprofile
 
 # I give up on environment module aliases...they are broken for TCSH and don't work non-interactively in Bash
 
