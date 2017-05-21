@@ -1,0 +1,14 @@
+#%Module
+proc ModulesHelp { } {
+puts stderr "Run user specified per process timers"
+puts stderr ""
+}
+# One line description
+module-whatis "Run user specified per process timers"
+
+set PREFIX /sw/titan/IntervalCheck
+
+prepend-path LD_LIBRARY_PATH $PREFIX/lib
+setenv IC_PRELOAD $PREFIX/lib/libIntervalCheck.so
+
+prepend-path PATH $PREFIX/bin

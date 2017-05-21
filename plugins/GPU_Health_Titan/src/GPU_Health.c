@@ -101,9 +101,9 @@ static void set_gpu_count() {
       nvml_err = nvmlDeviceGetPciInfo(device, &pci);
       if(nvml_err != NVML_SUCCESS) {
         ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      } else {
+        DEBUG_PRINT("(domain:bus:device) -> %s\n", pci.busId);
       }
-
-      DEBUG_PRINT("(domain:bus:device) -> %s\n", pci.busId);
     }
     
     // Cleanup NVML
@@ -215,8 +215,8 @@ static void initialize() {
   initialized = true;
 }
 
-// Attempt to initialize NVML, If this succeeds the GPU should be in OK shape
-static void gpu_health(int sig) {
+// Attempt to initialize NVML and run basic query, If this succeeds the GPU should be in OK shape
+void gpu_health(int sig) {
 
   // Preform initialization step
   if(!initialized) {
