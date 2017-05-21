@@ -29,6 +29,10 @@ if(gh_debug == 1) {                                                             
   printf("GH DEBUG(%s): %s: %d: %s: " str, time,  __FILENAME__, __LINE__, __func__, ##args); } \
 } while(0)
 
+#define ALPSKILL_PRINT(str, args...) do { fprintf(stderr, "ERROR Check GPU: %s:%d:%s(): " str, \
+		                               __FILE__, __LINE__, __func__, ##args); \
+	                                    kill_job(); } while(0)
+
 static bool initialized = false;
 static unsigned int gh_gpu_count = 0;
 static bool gh_debug = false;
@@ -39,7 +43,7 @@ static timer_t watchdog_id = 0;
 
 // Kill the batch job
 // This is required as the hangs can make the process non responsive to SIGKILL
-void kill_job() {
+static void kill_job() {
   // Get App ID
   int alps_id = atoi(getenv("ALPS_APP_ID"));
 
@@ -48,19 +52,18 @@ void kill_job() {
   // Contact ALPS to tell it we need to die
   int32_t buf[2] = { SIGKILL, -1 };
   int lli_ret = alps_app_lli_put_simple_request(ALPS_APP_LLI_ALPS_REQ_SIGNAL, buf, sizeof(buf));
+  // If killing through alps failed we're probably out of luck but we'll try a good ol' fashioned SIGKILL just in case 
   if (0 != lli_ret) {
     SIGKILL_PRINT("Failed to send low level ALPS message, Attempting to SIGKILL process\n");
   }
-
 }
 
-void watchdog_handler(int sig) {
-  DEBUG_PRINT("Watchdog timer for GPU Health expired: GPU hung for %d seconds\n", watchdog_timeout);
-  kill_job();
+static void watchdog_handler(int sig) {
+  ALPSKILL_PRINT("Watchdog timer for GPU Health expired: GPU hung for %d seconds\n", watchdog_timeout);
 }
 
 // Determine the number of GPU's available on the system
-void set_gpu_count() {
+static void set_gpu_count() {
 
   // If the value is specified don't worry about initilization
   if(getenv("GH_GPU_COUNT")) {
@@ -73,25 +76,46 @@ void set_gpu_count() {
     // Init NVML
     nvml_err = nvmlInit();
     if(nvml_err != NVML_SUCCESS) {
-      EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
     }
 
     // Get number of GPUs
     nvmlDeviceGetCount(&gh_gpu_count);
     if(nvml_err != NVML_SUCCESS) {
-      EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+    } else {
+      DEBUG_PRINT("%d GPUs detected\b", gh_gpu_count);
     }
 
+    // Check PCI info for each device
+    nvmlPciInfo_t pci;
+    nvmlDevice_t device;
+    for(int g_id=0; g_id<gh_gpu_count; g_id++) {
+      // Get device handle
+      nvml_err = nvmlDeviceGetHandleByIndex(g_id, &device);
+      if(nvml_err != NVML_SUCCESS) {
+        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      }
+
+      // Get PCI info, this should fail if GPU is off the bus
+      nvml_err = nvmlDeviceGetPciInfo(device, &pci);
+      if(nvml_err != NVML_SUCCESS) {
+        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      }
+
+      DEBUG_PRINT("(domain:bus:device) -> %s\n", pci.busId);
+    }
+    
     // Cleanup NVML
     nvml_err = nvmlShutdown();
     if(nvml_err != NVML_SUCCESS) {
-      EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
     }
   }
 }
 
 // Check for any useful environment variables
-void check_environment_variables() {
+static void check_environment_variables() {
   // Check if debug should be enabled
   if(getenv("GH_DEBUG")) {
     gh_debug = true;
@@ -108,7 +132,7 @@ void check_environment_variables() {
 }
 
 // Initialize the watchdog timer for the first time
-void init_watchdog() {
+static void init_watchdog() {
   // Set handler for SIGUSR1
   struct sigaction action;
   struct sigaction *old_action = NULL;
@@ -140,7 +164,7 @@ void init_watchdog() {
 }
 
 // Arm the watchdog timer
-void arm_watchdog() {
+static void arm_watchdog() {
   DEBUG_PRINT("Arming Watchdog timer\n");
 
   // Set the singleshot watchdog timer
@@ -157,7 +181,7 @@ void arm_watchdog() {
 }
 
 // Disarm the watchdog timer
-void disarm_watchdog() {
+static void disarm_watchdog() {
   DEBUG_PRINT("Disarming Watchdog timer\n");
 
   // Set the singleshot watchdog timer
@@ -166,7 +190,7 @@ void disarm_watchdog() {
   watchdog_time.it_value.tv_sec = 0;
   watchdog_time.it_value.tv_nsec = 0;
 
-  // Set the ti mer
+  // Set the timer
   int err = timer_settime(watchdog_id, 0, &watchdog_time, NULL);
   if(err != 0) {
     EXIT_PRINT("Failed to unset watchdog timer: %s\n", strerror(errno));
@@ -174,7 +198,7 @@ void disarm_watchdog() {
 }
 
 // Initialize the health checker, this should only be called once
-void initialize() {
+static void initialize() {
   check_environment_variables();
 
   // Prep the watchdog timer
@@ -192,7 +216,7 @@ void initialize() {
 }
 
 // Attempt to initialize NVML, If this succeeds the GPU should be in OK shape
-void gpu_health(int sig) {
+static void gpu_health(int sig) {
 
   // Preform initialization step
   if(!initialized) {
@@ -218,7 +242,8 @@ void gpu_health(int sig) {
   DEBUG_PRINT("Calling nvmlInit\n");
   nvml_err = nvmlInit();
   if(nvml_err != NVML_SUCCESS) {
-    EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+    fprintf(stderr, "NVML Failure: %s\n", nvmlErrorString(nvml_err));
+    kill_job();
   }
 
   // Attempt to aquire a handle to all devices
@@ -228,7 +253,8 @@ void gpu_health(int sig) {
     nvmlDevice_t device_handle;
     nvml_err = nvmlDeviceGetHandleByIndex(i, &device_handle);
     if(nvml_err != NVML_SUCCESS) {
-      EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      fprintf(stderr, "NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      kill_job();
     }
   }
 
@@ -239,7 +265,8 @@ void gpu_health(int sig) {
   DEBUG_PRINT("Calling nvmlShutdown\n");
   nvml_err = nvmlShutdown();
   if(nvml_err != NVML_SUCCESS) {
-    EXIT_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+    fprintf(stderr, "NVML Failure: %s\n", nvmlErrorString(nvml_err));
+    kill_job();
   }
 
   // Disarm the watchdog timer
