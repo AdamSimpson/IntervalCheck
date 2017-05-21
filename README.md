@@ -6,8 +6,12 @@
 using Smithy the build looks as follow:
 
 ```
+# If on Titan
+$ module switch PrgEnv-pgi PrgEnv-gnu
+#
+
 $ mkdir build
-$ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ..
+$ CC=gcc CXX=g++ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ..
 $ make
 $ make install
 ```
