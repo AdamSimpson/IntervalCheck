@@ -156,7 +156,7 @@ static void process_environment_variables() {
   if(getenv("IC_CALLBACKS")) {
     names_env = strdup(getenv("IC_CALLBACKS"));
   } else {
-    EXIT_PRINT("IC_CALLBACKS not defined\n");
+    fprintf(stderr, "IC_CALLBACKS not defined\n");
   }
 
   while ((callback_name = strsep(&names_env, ":"))) {
