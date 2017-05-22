@@ -1,0 +1,25 @@
+#%Module
+proc ModulesHelp { } {
+puts stderr "Check file progress"
+puts stderr ""
+}
+# One line description
+module-whatis "Check file progress"
+
+module unload xalt
+module load cudatoolkit
+
+if { ![is-loaded interval_check] } {
+  module load interval_check
+}
+
+setenv IC_PER_NODE true
+prepend-path IC_CALLBACKS file_progress
+
+set PREFIX /sw/titan/IntervalCheck/plugins/File_Progress
+
+setenv FP_SINGLE_PROCESS true
+
+prepend-path LD_LIBRARY_PATH $PREFIX/lib
+
+prepend-path IC_PRELOAD $PREFIX/lib/libFileProgress.so
