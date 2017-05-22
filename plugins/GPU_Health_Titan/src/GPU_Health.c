@@ -230,7 +230,7 @@ void gpu_health(int sig) {
   // Attempt to aquire a handle to all devices
   // This should fail in the GPU is in a "bad" state
   for(int i=0; i<gh_gpu_count; i++) {
-    DEBUG_PRINT("Attemping to get handle to GPU %d of %d\n", i, gh_gpu_count-1);
+    DEBUG_PRINT("Attemping to get handle to GPU %d of %d\n", i, gh_gpu_count);
     nvmlDevice_t device_handle;
     nvml_err = nvmlDeviceGetHandleByIndex(i, &device_handle);
     if(nvml_err != NVML_SUCCESS) {
