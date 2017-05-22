@@ -87,25 +87,6 @@ static void set_gpu_count() {
       DEBUG_PRINT("%d GPUs detected\b", gh_gpu_count);
     }
 
-    // Check PCI info for each device
-    nvmlPciInfo_t pci;
-    nvmlDevice_t device;
-    for(int g_id=0; g_id<gh_gpu_count; g_id++) {
-      // Get device handle
-      nvml_err = nvmlDeviceGetHandleByIndex(g_id, &device);
-      if(nvml_err != NVML_SUCCESS) {
-        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
-      }
-
-      // Get PCI info, this should fail if GPU is off the bus
-      nvml_err = nvmlDeviceGetPciInfo(device, &pci);
-      if(nvml_err != NVML_SUCCESS) {
-        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
-      } else {
-        DEBUG_PRINT("(domain:bus:device) -> %s\n", pci.busId);
-      }
-    }
-    
     // Cleanup NVML
     nvml_err = nvmlShutdown();
     if(nvml_err != NVML_SUCCESS) {
@@ -253,9 +234,28 @@ void gpu_health(int sig) {
     nvmlDevice_t device_handle;
     nvml_err = nvmlDeviceGetHandleByIndex(i, &device_handle);
     if(nvml_err != NVML_SUCCESS) {
-      fprintf(stderr, "NVML Failure: %s\n", nvmlErrorString(nvml_err));
-      kill_job();
+      ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
     }
+
+    // Check PCI info for each device
+    nvmlPciInfo_t pci;
+    nvmlDevice_t device;
+    for(int g_id=0; g_id<gh_gpu_count; g_id++) {
+      // Get device handle
+      nvml_err = nvmlDeviceGetHandleByIndex(g_id, &device);
+      if(nvml_err != NVML_SUCCESS) {
+        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      }
+
+      // Get PCI info, this should fail if GPU is off the bus
+      nvml_err = nvmlDeviceGetPciInfo(device, &pci);
+      if(nvml_err != NVML_SUCCESS) {
+        ALPSKILL_PRINT("NVML Failure: %s\n", nvmlErrorString(nvml_err));
+      } else {
+        DEBUG_PRINT("(domain:bus:device) -> %s\n", pci.busId);
+      }
+    }
+
   }
 
   // The tests have passed(or died trying to pass)
