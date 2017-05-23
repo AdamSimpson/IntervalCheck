@@ -1,10 +1,10 @@
 #%Module
 proc ModulesHelp { } {
-puts stderr "<%= GPU Check>"
+puts stderr "<%= PCI Health Check>"
 puts stderr ""
 }
 # One line description
-module-whatis "GPU Health Check utility"
+module-whatis "PCI Health Check utility"
 
 module unload xalt
 module load cudatoolkit
@@ -17,7 +17,7 @@ setenv IC_PER_NODE true
 setenv GH_GPU_COUNT 1
 prepend-path IC_CALLBACKS gpu_health
 
-set PREFIX /sw/titan/IntervalCheck/plugins/GPU_Health_Titan
+set PREFIX /sw/titan/IntervalCheck/plugins/PCI_Health_Titan
 prepend-path LD_LIBRARY_PATH $PREFIX/lib
 
 prepend-path IC_PRELOAD $PREFIX/lib/libGPUhealthTitan.so
